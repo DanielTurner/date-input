@@ -1,0 +1,55 @@
+import { Story, Preview, Meta, Props, html } from '@open-wc/demoing-storybook';
+
+import '../date-input.js';
+
+<Meta 
+  title="DateInput"
+  parameters={{
+    component: "date-input",
+    options: { selectedPanel: "storybookjs/knobs/panel" }
+  }}
+/>
+
+# DateInput
+
+A component for...
+
+## Features:
+
+- a
+- b
+- ...
+
+## How to use
+
+### Installation
+
+```bash
+yarn add date-input
+```
+
+```js
+import 'date-input/date-input.js';
+```
+
+<Preview withToolbar>
+  <Story name="Simple">
+    {html`
+      <date-input></date-input>
+    `}
+  </Story>
+</Preview>
+
+## API
+
+<Props of="date-input" />
+
+## Variations
+
+###### Custom Title
+
+<Story name="Custom Title">
+  {html`
+    <date-input .title=${'Hello World'}></date-input>
+  `}
+</Story>
