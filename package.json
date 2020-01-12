@@ -29,6 +29,8 @@
   "devDependencies": {
     "es-dev-server": "^1.5.0",
     "eslint": "^6.1.0",
+    "eslint-config-google": "^0.13.0",
+    "eslint-plugin-lit": "^1.2.0",
     "@open-wc/eslint-config": "^2.0.0",
     "@open-wc/prettier-config": "^0.1.10",
     "husky": "^1.0.0",
@@ -41,7 +43,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "@open-wc/eslint-config",
+      "@open-wc/eslint-config ",
       "eslint-config-prettier"
     ]
   },

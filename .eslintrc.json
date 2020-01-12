@@ -1,0 +1,37 @@
+{
+  "env": {
+      "browser": true,
+      "es6": true,
+      "serviceworker": true
+  },
+  "extends": [
+      "@open-wc/eslint-config",
+      "google"
+  ],
+  "globals": {
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+  },
+  "parserOptions": {
+      "ecmaVersion": 2018,
+      "sourceType": "module"
+  },
+  "plugins": [
+      "lit"
+  ],
+  "rules": {
+      "lit/attribute-value-entities": "error",
+      "lit/binding-positions": "error",
+      "lit/no-duplicate-template-bindings": "error",
+      "lit/no-invalid-escape-sequences": "error",
+      "lit/no-legacy-template-syntax": "error",
+      "lit/no-private-properties": "error",
+      "lit/no-property-change-update": "error",
+      "lit/no-template-arrow":"error",
+      "lit/no-template-bind": "error",
+      "lit/no-template-map": "error",
+      "lit/no-useless-template-literals": "error",
+      "lit/no-value-attribute": "error",
+      "import/no-cycle": "off"
+  }
+}
