@@ -361,6 +361,7 @@ export class DateInputWrapper extends LitElement {
     this.open = open;
   }
 
+  /* eslint-disable */
   /**
    * @return {CSSResult}
    */
@@ -371,6 +372,7 @@ export class DateInputWrapper extends LitElement {
         position: relative;
         font: var(--picker-font, 'Arial');
       }
+
       :host([open]) #picker {
         display: flex;
       }
@@ -388,6 +390,7 @@ export class DateInputWrapper extends LitElement {
         box-sizing: border-box;
         padding: 0.5rem;
         border: 1px solid #000;
+        z-index: 1;
       }
 
       table {
@@ -398,9 +401,11 @@ export class DateInputWrapper extends LitElement {
         border-color: var(--calendar-border-color, #808080);
         width: 100%;
       }
+
       thead {
         background-color: var(--day-background, #EDEDED);
       }
+
       th {
         color: var(--day-foreground, #333333);
         font-size: var(--day-fontsize, 14px);
