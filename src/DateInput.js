@@ -30,7 +30,14 @@ export class DateInputWrapper extends LitElement {
     ];
 
     this.days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    this.format = 'US';
+    this.format = {
+      locales: 'en-US',
+      options: {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      },
+    };
     this.instance = '';
   }
 
@@ -89,7 +96,7 @@ export class DateInputWrapper extends LitElement {
       },
 
       format: {
-        type: String,
+        type: Object,
       },
     };
   }
@@ -103,7 +110,6 @@ export class DateInputWrapper extends LitElement {
     input.addEventListener('keydown', (e) => {
       e.preventDefault();
     });
-    input.setAttribute('pattern', '\\d{2}-\\d{2}-\\d{4}');
     window.addEventListener('closeDateInput',
         (e) => this.togglePicker(false, e));
   }
@@ -314,24 +320,20 @@ export class DateInputWrapper extends LitElement {
       ? month
       : `0${month}`;
     const displayYear = year;
-    switch (this.format) {
-      case 'AU': {
-        this.selectedDate = `${displayDay}-${displayMonth}-${displayYear}`;
-        break;
-      }
-      default: {
-        this.selectedDate = `${displayMonth}-${displayDay}-${displayYear}`;
-        break;
-      }
-    }
+
     const slot = this.shadowRoot.querySelector('slot');
     if (slot) {
-      slot.assignedElements()[0].value = this.selectedDate;
-      const timestamp = new Date(`${displayYear}-${displayMonth}-${displayDay}`)
-      .getTime() / 1000;
+      const date = new Date(`${displayYear}-${displayMonth}-${displayDay}`);
+      const timestamp = date.getTime() / 1000;
+
+      slot.assignedElements()[0].value = new Intl.DateTimeFormat(
+          this.format.locales,
+          this.format.options,
+      ).format(date);
+
       slot.assignedElements()[0].setAttribute('data-timestamp', timestamp);
       slot.assignedElements()[0]
-      .dispatchEvent(new Event('input', { bubbles: true }));
+          .dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 

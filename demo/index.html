@@ -15,14 +15,13 @@
     import { html, render } from 'lit-html';
     import '../date-input.js';
 
-    const title = 'Hello owc World!';
     render(
         html`
-        <date-input .title=${title}>
-          <input slot="date" type="text" id="date" value="01-02-2020">
+        <date-input>
+          <input slot="date" type="text" id="date" value="January 1, 2020">
         </date-input>
-        <date-input .title=${title}>
-          <input slot="date" type="text" id="date" value="01-02-2020">
+        <date-input>
+          <input slot="date" type="text" id="date" value="January 2, 2020">
         </date-input>
       `,
         document.querySelector('#demo'),

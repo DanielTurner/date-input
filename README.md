@@ -73,3 +73,19 @@ To run a local development server in compatibility mode for older browsers that 
 * border-style: var(--calendar-borderstyle, solid);
 * border-color: var(--calendar-border-color, #808080);
 * opacity: var(--sprite-opacity, 0.5);
+
+
+## Date format
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
+
+Default format is as follows
+
+```javascript    this.format = {
+      locales: 'en-US',
+      options: {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      },
+    };
+```
