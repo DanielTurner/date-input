@@ -165,7 +165,8 @@ export class DateInputWrapper extends LitElement {
    * @return {Number}
    */
   daysInMonth() {
-    return 32 - new Date(this.selectedYear, this.selectedMonth, 32).getDate();
+    return 32 - new Date(this.selectedYear, this.selectedMonth - 1, 32)
+        .getDate();
   }
 
   /**
@@ -213,12 +214,13 @@ export class DateInputWrapper extends LitElement {
    * @return {TemplateResult}
    */
   renderDayTable() {
-    const tmpDate = new Date(this.selectedYear, this.selectedMonth, 0);
+    const tmpDate = new Date(this.selectedYear, this.selectedMonth - 1, 0);
     // eslint-disable-next-line no-unused-vars
     const num = this.daysInMonth();
     // eslint-disable-next-line no-unused-vars
     const dayOfWeek = tmpDate.getDay();
-    const firstDay = new Date(this.selectedYear, this.selectedMonth).getDay();
+    const firstDay = new Date(this.selectedYear, this.selectedMonth - 1)
+        .getDay();
     const displayDays = this.days.map((day) => html`<th>${day}</th>`);
     const rows = [];
     let date = 1;
