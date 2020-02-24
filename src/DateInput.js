@@ -39,6 +39,8 @@ export class DateInputWrapper extends LitElement {
       },
     };
     this.instance = '';
+    this.max = 0;
+    this.min = 0;
   }
 
   /**
@@ -58,8 +60,16 @@ export class DateInputWrapper extends LitElement {
         type: String,
       },
 
+      max: {
+        type: Number,
+      },
+
       maxYear: {
         type: String,
+      },
+
+      min: {
+        type: Number,
       },
 
       minYear: {
@@ -92,7 +102,7 @@ export class DateInputWrapper extends LitElement {
       },
 
       value: {
-        type: Number,
+        type: String,
       },
 
       format: {
@@ -106,12 +116,21 @@ export class DateInputWrapper extends LitElement {
    */
   firstUpdated() {
     const input = this.shadowRoot.querySelector('slot').assignedElements()[0];
-    input.addEventListener('click', (e) => this.togglePicker(true, e));
-    input.addEventListener('keydown', (e) => {
+    this.min = this.min ? this.min : Math.round(new Date().setFullYear(this.minYear) / 1000);
+
+    this.max = this.max ? this.max : Math.round(new Date().setFullYear(this.maxYear) / 1000);
+
+    input.addEventListener('click', e => this.togglePicker(true, e));
+    input.addEventListener('keydown', e => {
       e.preventDefault();
     });
-    window.addEventListener('closeDateInput',
-        (e) => this.togglePicker(false, e));
+    window.addEventListener('closeDateInput', e => this.togglePicker(false, e));
+
+    window.addEventListener('keydown', event => {
+      if (event.which === 27) {
+        this.togglePicker(false, event);
+      }
+    });
   }
 
   /**
@@ -123,13 +142,10 @@ export class DateInputWrapper extends LitElement {
     this.selectedMonth = thisMonth;
     this.selectedYear = date.getFullYear().toString();
     this.selectedDay = thisDay;
+
     const selectedYearIndex = date.getFullYear() - Number(this.minYear);
     const selectedMonthIndex = Number(this.selectedMonth);
-    this.updateSelectedDate(
-        this.selectedDay,
-        this.selectedMonth,
-        this.selectedYear,
-    );
+    this.updateSelectedDate(this.selectedDay, this.selectedMonth, this.selectedYear);
     this.updateDropdowns(selectedYearIndex, selectedMonthIndex);
   }
 
@@ -165,8 +181,7 @@ export class DateInputWrapper extends LitElement {
    * @return {Number}
    */
   daysInMonth() {
-    return 32 - new Date(this.selectedYear, this.selectedMonth - 1, 32)
-        .getDate();
+    return 32 - new Date(this.selectedYear, this.selectedMonth - 1, 32).getDate();
   }
 
   /**
@@ -176,11 +191,11 @@ export class DateInputWrapper extends LitElement {
     const initialMonth = this.months[new Date().getMonth()];
 
     const selections = this.months.map(
-        (month, index) => html`
-            <option
-              ?selected=${month === initialMonth} value=${index + 1}>
-              ${month}
-            </option>`,
+      (month, index) => html`
+        <option ?selected=${month === initialMonth} value=${index + 1}>
+          ${month}
+        </option>
+      `,
     );
 
     return html`
@@ -219,9 +234,15 @@ export class DateInputWrapper extends LitElement {
     const num = this.daysInMonth();
     // eslint-disable-next-line no-unused-vars
     const dayOfWeek = tmpDate.getDay();
-    const firstDay = new Date(this.selectedYear, this.selectedMonth - 1)
-        .getDay();
-    const displayDays = this.days.map((day) => html`<th>${day}</th>`);
+    const timestampOfFirstDay = tmpDate.getTime() / 1000;
+    const dateOfDay = new Date(this.selectedYear, this.selectedMonth - 1);
+    const firstDay = dateOfDay.getDay();
+    const displayDays = this.days.map(
+      day =>
+        html`
+          <th>${day}</th>
+        `,
+    );
     const rows = [];
     let date = 1;
     for (let i = 0; i < 6; i += 1) {
@@ -229,23 +250,30 @@ export class DateInputWrapper extends LitElement {
       for (let j = 0; j < 7; j += 1) {
         if (i === 0 && j < firstDay) {
           rowDays.push(
-              html`
+            html`
               <td></td>
             `,
           );
         } else if (date > this.daysInMonth()) {
           break;
         } else {
-          rowDays.push(
-              html`
+          const currentTimestamp = Number(timestampOfFirstDay + date * 86400);
+          this.min = Number(this.min);
+          this.max = Number(this.max);
+          if (currentTimestamp > this.min && currentTimestamp < this.max) {
+            rowDays.push(html`
               <td id=${date} @click=${this.selectDate}>${date}</td>
-            `,
-          );
+            `);
+          } else {
+            rowDays.push(html`
+              <td id=${date} disabled>${date}</td>
+            `);
+          }
           date += 1;
         }
       }
       rows.push(
-          html`
+        html`
           <tr>
             ${rowDays}
           </tr>
@@ -271,11 +299,7 @@ export class DateInputWrapper extends LitElement {
    */
   selectDate({ target: { id } }) {
     this.selectedDay = id;
-    this.updateSelectedDate(
-        this.selectedDay,
-        this.selectedMonth,
-        this.selectedYear,
-    );
+    if (!this.updateSelectedDate(this.selectedDay, this.selectedMonth, this.selectedYear)) return;
     this.togglePicker(false);
   }
 
@@ -313,14 +337,11 @@ export class DateInputWrapper extends LitElement {
    * @param {String} day
    * @param {String} month
    * @param {String} year
+   * @return {Boolean}
    */
   updateSelectedDate(day, month, year) {
-    const displayDay = Number(day) > 9
-      ? day
-      : `0${day}`;
-    const displayMonth = month > 9
-      ? month
-      : `0${month}`;
+    const displayDay = Number(day) > 9 ? day : `0${day}`;
+    const displayMonth = month > 9 ? month : `0${month}`;
     const displayYear = year;
 
     const slot = this.shadowRoot.querySelector('slot');
@@ -328,15 +349,24 @@ export class DateInputWrapper extends LitElement {
       const date = new Date(`${displayYear}-${displayMonth}-${displayDay}`);
       const timestamp = date.getTime() / 1000;
 
+      let allowedDate = true;
+      if (this.min) {
+        allowedDate = timestamp > this.min;
+      }
+      if (this.max) {
+        allowedDate = this.max > timestamp;
+      }
+
+      if (!allowedDate) return false;
       slot.assignedElements()[0].value = new Intl.DateTimeFormat(
-          this.format.locales,
-          this.format.options,
+        this.format.locales,
+        this.format.options,
       ).format(date);
 
       slot.assignedElements()[0].setAttribute('data-timestamp', timestamp);
-      slot.assignedElements()[0]
-          .dispatchEvent(new Event('input', { bubbles: true }));
+      slot.assignedElements()[0].dispatchEvent(new Event('input', { bubbles: true }));
     }
+    return true;
   }
 
   /**
@@ -346,18 +376,10 @@ export class DateInputWrapper extends LitElement {
     return html`
       <slot name="date"></slot>
       <div id="picker">
-        <button
-          class="sprite previous"
-          @click="${this.previousMonth}">
-        </button>
-        <button
-          class="sprite home"
-          @click="${this.setToday}"></button>
+        <button class="sprite previous" @click="${this.previousMonth}"></button>
+        <button class="sprite home" @click="${this.setToday}"></button>
         ${this.renderMonthSelect()} ${this.renderYearSelect()}
-        <button
-          class="sprite next"
-          @click="${this.nextMonth}">
-        </button>
+        <button class="sprite next" @click="${this.nextMonth}"></button>
         ${this.renderDayTable()}
       </div>
     `;
@@ -372,6 +394,7 @@ export class DateInputWrapper extends LitElement {
     this.open = open;
   }
 
+  /* eslint-disable max-len */
   /**
    * @return {CSSResult}
    */
@@ -401,7 +424,7 @@ export class DateInputWrapper extends LitElement {
         z-index: 1;
       }
       table {
-        background-color: var(--calendar-background, #F2F2F2);
+        background-color: var(--calendar-background, #f2f2f2);
         border-collapse: collapse;
         border-width: var(--calendar-borderwidth, 1px);
         border-style: var(--calendar-borderstyle, solid);
@@ -409,7 +432,7 @@ export class DateInputWrapper extends LitElement {
         width: 100%;
       }
       thead {
-        background-color: var(--day-background, #EDEDED);
+        background-color: var(--day-background, #ededed);
       }
       th {
         color: var(--day-foreground, #333333);
@@ -425,6 +448,7 @@ export class DateInputWrapper extends LitElement {
         border-width: var(--calendar-borderwidth, 1px);
         border-style: var(--calendar-borderstyle, solid);
         border-color: var(--calendar-border-color, #808080);
+        cursor: pointer;
       }
       select {
         background-color: transparent;
@@ -451,6 +475,10 @@ export class DateInputWrapper extends LitElement {
       }
       .next {
         background-position: 0 0;
+      }
+      [disabled] {
+        cursor: not-allowed;
+        background-color: var(--disabled-background, #cccccc);
       }
     `;
   }
